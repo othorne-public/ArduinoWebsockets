@@ -4,6 +4,8 @@
 #include <tiny_websockets/network/tcp_client.hpp>
 #include <tiny_websockets/network/tcp_server.hpp>
 
+static int StaticClientID = 0;
+
 namespace websockets { namespace network {
   struct TcpServer : public TcpSocket {
     virtual bool poll() = 0;

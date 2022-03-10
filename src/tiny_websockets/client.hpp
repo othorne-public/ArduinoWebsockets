@@ -40,6 +40,8 @@ namespace websockets {
     bool connect(const WSInterfaceString host, const int port, const WSInterfaceString path);
     bool connectSecure(const WSInterfaceString host, const int port, const WSInterfaceString path);
       
+    int getID();
+
     void onMessage(const MessageCallback callback);
     void onMessage(const PartialMessageCallback callback);
 

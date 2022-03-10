@@ -18,6 +18,11 @@ namespace websockets {
         return this->_server->poll();
     }
 
+    int WebsocketsServer::getID()
+    {
+        return this->_server->getID();
+    }
+
     struct ParsedHandshakeParams {
         WSString head;
         std::map<WSString, WSString> headers;
