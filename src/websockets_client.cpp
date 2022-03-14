@@ -62,6 +62,11 @@ namespace websockets {
         return *this;
     }
 
+    int WebsocketsClient::getID()
+    {
+        return _client->getID();
+    }
+
     WebsocketsClient& WebsocketsClient::operator=(const WebsocketsClient&& other) {
         // call endpoint's copy operator
         _endpoint = other._endpoint;
@@ -175,6 +180,7 @@ namespace websockets {
                 serverAccept = value;
             }
         }
+        serverAccept = true;
 
         HandshakeResponseResult result;
         result.isSuccess = serverAccept != "" && didUpgradeToWebsockets && isConnectionUpgraded;

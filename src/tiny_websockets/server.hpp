@@ -18,6 +18,7 @@ namespace websockets {
     bool available();
     void listen(uint16_t port);
     bool poll();
+    int getID();
     WebsocketsClient accept();
 
     virtual ~WebsocketsServer();

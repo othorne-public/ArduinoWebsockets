@@ -18,6 +18,11 @@ namespace websockets {
         return this->_server->poll();
     }
 
+    int WebsocketsServer::getID()
+    {
+        return this->_server->getID();
+    }
+
     struct ParsedHandshakeParams {
         WSString head;
         std::map<WSString, WSString> headers;
@@ -78,6 +83,7 @@ namespace websockets {
         tcpClient->send("Upgrade: websocket\r\n");
         tcpClient->send("Sec-WebSocket-Version: 13\r\n");
         tcpClient->send("Sec-WebSocket-Accept: " + serverAccept + "\r\n");
+        tcpClient->send("Sec-WebSocket-Protocol: ocpp1.6\r\n");
         tcpClient->send("\r\n");
         
         WebsocketsClient wsClient(tcpClient);
