@@ -127,6 +127,10 @@ namespace websockets {
         if (shouldAddDefaultHeader("User-Agent", customHeaders)) {
             handshake += "User-Agent: TinyWebsockets Client\r\n";
         }
+        
+        if (shouldAddDefaultHeader("Sec-Websocket-Protocol", customHeaders)) {
+            handshake += "Sec-Websocket-Protocol: ocpp1.6\r\n";
+        }
 
         if (shouldAddDefaultHeader("Origin", customHeaders)) {
             handshake += "Origin: https://github.com/gilmaimon/TinyWebsockets\r\n";
@@ -229,14 +233,25 @@ namespace websockets {
         }
     #elif defined(ESP32)
         if(this->_optional_ssl_ca_cert) {
+            Serial.println("setting _optional_ssl_ca_cert");
             client->setCACert(this->_optional_ssl_ca_cert);
         }
+        else
+            Serial.println("no _optional_ssl_private_key");
+
         if(this->_optional_ssl_client_ca) {
+            Serial.println("setting _optional_ssl_client_ca");
             client->setCertificate(this->_optional_ssl_client_ca);
         }
+        else
+            Serial.println("no _optional_ssl_client_ca");
+
         if(this->_optional_ssl_private_key) {
+            Serial.println("setting _optional_ssl_private_key");
             client->setPrivateKey(this->_optional_ssl_private_key);
         }
+        else
+            Serial.println("no _optional_ssl_private_key");
     #endif
 
         this->_client = std::shared_ptr<WSDefaultSecuredTcpClient>(client);
@@ -251,7 +266,7 @@ namespace websockets {
     bool WebsocketsClient::connect(WSInterfaceString _url) {
         WSString url = internals::fromInterfaceString(_url);
         WSString protocol = "";
-        int defaultPort = 0;
+        int defaultPort = 80;
 
         if(doestStartsWith(url, "http://")) {
             defaultPort = 80;
@@ -319,6 +334,8 @@ namespace websockets {
 
         auto handshake = generateHandshake(internals::fromInterfaceString(host), internals::fromInterfaceString(path), _customHeaders);
         this->_client->send(handshake.requestStr);
+        Serial.print("Connecting to host ");
+        Serial.println(path.c_str());
 
         // This check is needed because of an ESP32 lib bug that wont signal that the connection had
         // failed in `->connect` (called above), sometimes the disconnect will only be noticed here (after a `send`)
@@ -327,21 +344,25 @@ namespace websockets {
         }
 
         auto head = this->_client->readLine();
+        Serial.println("Head:");
+        Serial.print(head.c_str());
         if(!doestStartsWith(head, "HTTP/1.1 101")) {
+            Serial.print("No head!");
             close(CloseReason_ProtocolError);
             return false;
         }
 
         std::vector<WSString> serverResponseHeaders;
         WSString line = "";
-        while (true) {
+        Serial.println("Body:");
+        while (true)
+        {
             line = this->_client->readLine();
-
+            Serial.print(line.c_str());
             if (line.size() < 2) {
                 close(CloseReason_ProtocolError);
                 return false;
             }
-
             if (line == "\r\n") break;
             // remove /r/n from line end
             line = line.substr(0, line.size() - 2);
@@ -355,11 +376,13 @@ namespace websockets {
 #else
         bool serverAcceptMismatch = parsedResponse.serverAccept != handshake.expectedAcceptKey;
 #endif
+/*
         if(parsedResponse.isSuccess == false || serverAcceptMismatch) {
             close(CloseReason_ProtocolError);
+            Serial.println("Closed : protocol error");
             return false;
         }
-
+*/
         this->_eventsCallback(*this, WebsocketsEvent::ConnectionOpened, {});
         return true;
     }
